@@ -36,6 +36,30 @@ public class Customer {
     private String addrZipCode;
     private String addrCountryCode;
 
+    static Customer initializePersonWith(RegisterPersonForm form) {
+        final var customer = new Customer();
+        customer.initializePerson(form);
+        return customer;
+    }
+
+    void initializePerson(RegisterPersonForm form) {
+        this.type = PERSON;
+        this.id = UUID.randomUUID();
+        this.ctime = LocalDateTime.now();
+        if (form.hasValidEmail()) {
+            this.email = form.getEmail();
+        }
+        if (form.hasValidFirstName()) {
+            this.fName = form.getFirstName();
+        }
+        if (form.isValidLastName()) {
+            this.lName = form.getLastName();
+        }
+        if (form.isValidPesel()) {
+            this.pesel = form.getPesel();
+        }
+    }
+
     public UUID getId() {
         return id;
     }
@@ -80,7 +104,7 @@ public class Customer {
         return fName;
     }
 
-    public void setfName(String fName) {
+    public void setFirstName(String fName) {
         this.fName = fName;
     }
 
@@ -88,7 +112,7 @@ public class Customer {
         return lName;
     }
 
-    public void setlName(String lName) {
+    public void setLastName(String lName) {
         this.lName = lName;
     }
 
@@ -144,7 +168,7 @@ public class Customer {
         return verfTime;
     }
 
-    public void setVerfTime(LocalDateTime verfTime) {
+    public void setVerificationTime(LocalDateTime verfTime) {
         this.verfTime = verfTime;
     }
 
@@ -152,7 +176,7 @@ public class Customer {
         return verf;
     }
 
-    public void setVerf(boolean verf) {
+    public void setVerified(boolean verf) {
         this.verf = verf;
     }
 
@@ -160,8 +184,18 @@ public class Customer {
         return verifBy;
     }
 
-    public void setVerifBy(CustomerVerifier verifBy) {
+    public void setVerifiedBy(CustomerVerifier verifBy) {
         this.verifBy = verifBy;
+    }
+
+    boolean isValidPerson() {
+        return getEmail() != null && getfName() != null && getlName() != null && getPesel() != null;
+    }
+
+    void markVerified() {
+        this.verf = true;
+        this.verfTime = LocalDateTime.now();
+        this.verifBy = CustomerVerifier.AUTO_EMAIL;
     }
 
     @Override

@@ -3,25 +3,15 @@ package pl.sda.refactoring.customers;
 import java.util.Optional;
 import java.util.UUID;
 
-public class CustomerDao {
+interface CustomerDao {
 
-    public void save(Customer customer) {
-        throw new UnsupportedOperationException();
-    }
+    void save(Customer customer);
 
-    public boolean emailExists(String email) {
-        throw new UnsupportedOperationException();
-    }
+    boolean emailExists(String email);
 
-    public boolean peselExists(String pesel) {
-        throw new UnsupportedOperationException();
-    }
+    boolean peselExists(String pesel);
 
-    public boolean vatExists(String vat) {
-        throw new UnsupportedOperationException();
-    }
+    boolean vatExists(String vat);
 
-    public Optional<Customer> findById(UUID cid) {
-        throw new UnsupportedOperationException();
-    }
+    Optional<Customer> findById(UUID cid);
 }
