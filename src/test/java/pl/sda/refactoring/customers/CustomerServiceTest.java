@@ -20,17 +20,13 @@ public class CustomerServiceTest {
 
     @Test
     public void testRegisterCompanyVerified() throws Exception {
-        TestUtil.setEnv(Map.of(
-            "MAIL_SMTP_HOST", "smtp",
-            "MAIL_SMTP_PORT", "27",
-            "MAIL_SMTP_SSL_TRUST", "true"
-        ));
-        var mailTransport = mockStatic(Transport.class);
         var dao = mock(CustomerDao.class);
         when(dao.emailExists(anyString())).thenReturn(false);
         when(dao.vatExists(anyString())).thenReturn(false);
         var customerCapture = ArgumentCaptor.forClass(Customer.class);
-        var service = new CustomerService(dao);
+        var mailSender = mock(MailSender.class);
+        when(mailSender.sendEmail(anyString(), anyString(), anyString())).thenReturn(true);
+        var service = new CustomerService(dao, mailSender);
         var reg = service.registerCompany("test@test.com", "Test S.A.", "9302030403", true);
         assertTrue(reg);
         verify(dao).save(customerCapture.capture());
@@ -42,59 +38,49 @@ public class CustomerServiceTest {
         assertTrue(customer.isVerf());
         assertEquals(customer.getVerifBy(), CustomerVerifier.AUTO_EMAIL);
         assertNotNull(customer.getVerfTime());
-        mailTransport.verify(() -> Transport.send(any()));
-        mailTransport.close();
     }
 
     @Test
     public void testCompanyExists() throws Exception {
-        var mailTransport = mockStatic(Transport.class);
         var dao = mock(CustomerDao.class);
         when(dao.emailExists(anyString())).thenReturn(true);
         when(dao.vatExists(anyString())).thenReturn(true);
-        var service = new CustomerService(dao);
+        var mailSender = mock(MailSender.class);
+        var service = new CustomerService(dao, mailSender);
         var reg = service.registerCompany("mail@comp.com", "Test S.A.", "9302030403", true);
         assertFalse(reg);
-        mailTransport.verifyNoInteractions();
-        mailTransport.close();
     }
 
     @Test
     public void testEmailFail() throws Exception {
-        var mailTransport = mockStatic(Transport.class);
         var dao = mock(CustomerDao.class);
         when(dao.emailExists(anyString())).thenReturn(false);
         when(dao.vatExists(anyString())).thenReturn(false);
-        var service = new CustomerService(dao);
+        var mailSender = mock(MailSender.class);
+        var service = new CustomerService(dao, mailSender);
         var reg = service.registerCompany("invalid@", "Test S.A.", "9302030403", true);
         assertFalse(reg);
-        mailTransport.verifyNoInteractions();
-        mailTransport.close();
     }
 
     @Test
     public void testNameFail() throws Exception {
-        var mailTransport = mockStatic(Transport.class);
         var dao = mock(CustomerDao.class);
         when(dao.emailExists(anyString())).thenReturn(false);
         when(dao.vatExists(anyString())).thenReturn(false);
-        var service = new CustomerService(dao);
+        var mailSender = mock(MailSender.class);
+        var service = new CustomerService(dao, mailSender);
         var reg = service.registerCompany("test@ok.com", "F&", "9302030403", true);
         assertFalse(reg);
-        mailTransport.verifyNoInteractions();
-        mailTransport.close();
     }
 
     @Test
     public void testVatFail() throws Exception {
-        var mailTransport = mockStatic(Transport.class);
         var dao = mock(CustomerDao.class);
         when(dao.emailExists(anyString())).thenReturn(false);
         when(dao.vatExists(anyString())).thenReturn(false);
-        var service = new CustomerService(dao);
+        var mailSender = mock(MailSender.class);
+        var service = new CustomerService(dao, mailSender);
         var reg = service.registerCompany("test@ok.com", "TestOK", "AB02030403", true);
         assertFalse(reg);
-        mailTransport.verifyNoInteractions();
-        mailTransport.close();
     }
 }
