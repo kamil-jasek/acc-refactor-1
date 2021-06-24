@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import pl.sda.refactoring.customers.exception.CompanyAlreadyExistsException;
+import pl.sda.refactoring.customers.exception.InvalidCompanyCustomerException;
 import pl.sda.refactoring.customers.exception.RegisterFormNotFilledException;
 
 public final class CustomerService {
@@ -52,10 +53,6 @@ public final class CustomerService {
     public boolean registerCompany(RegisterCompanyForm form) {
         validate(form);
         final var customer = Customer.initializeCompanyWith(form);
-        if (!customer.isValidCompany()) {
-            return false;
-        }
-
         String subj;
         String body;
         if (form.isVerified()) {

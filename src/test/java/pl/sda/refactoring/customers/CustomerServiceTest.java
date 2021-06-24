@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import pl.sda.refactoring.customers.exception.CompanyAlreadyExistsException;
+import pl.sda.refactoring.customers.exception.InvalidCompanyCustomerException;
+import pl.sda.refactoring.customers.exception.RegisterFormNotFilledException;
 
 public class CustomerServiceTest {
 
@@ -46,15 +48,27 @@ public class CustomerServiceTest {
     @Test
     public void shouldNotRegisterCompanyIfAlreadyExists() throws Exception {
         // given
-        var dao = mock(CustomerDao.class);
+        final var dao = mock(CustomerDao.class);
         when(dao.emailExists(anyString())).thenReturn(true);
         when(dao.vatExists(anyString())).thenReturn(true);
-        var mailSender = mock(MailSender.class);
-        var service = new CustomerService(dao, mailSender);
+        final var mailSender = mock(MailSender.class);
+        final var service = new CustomerService(dao, mailSender);
 
         // when
         assertThrows(CompanyAlreadyExistsException.class, () -> service.registerCompany(
             new RegisterCompanyForm("mail@comp.com", "Test S.A.", "9302030403", true)));
+    }
+
+    @Test
+    public void shouldNotRegisterCompanyIfFormIsNotFilled() {
+        // given
+        final var dao = mock(CustomerDao.class);
+        final var mailSender = mock(MailSender.class);
+        final var service = new CustomerService(dao, mailSender);
+
+        // when
+        assertThrows(RegisterFormNotFilledException.class, () -> service.registerCompany(
+            new RegisterCompanyForm(null, null, null, false)));
     }
 
     @Test
@@ -67,10 +81,8 @@ public class CustomerServiceTest {
         var service = new CustomerService(dao, mailSender);
 
         // when
-        var reg = service.registerCompany(new RegisterCompanyForm("invalid@", "Test S.A.", "9302030403", true));
-
-        // then
-        assertFalse(reg);
+        assertThrows(InvalidCompanyCustomerException.class, () -> service.registerCompany(
+            new RegisterCompanyForm("invalid@", "Test S.A.", "9302030403", true)));
     }
 
     @Test
@@ -83,10 +95,8 @@ public class CustomerServiceTest {
         var service = new CustomerService(dao, mailSender);
 
         // when
-        var reg = service.registerCompany(new RegisterCompanyForm("test@ok.com", "F&", "9302030403", true));
-
-        // then
-        assertFalse(reg);
+        assertThrows(InvalidCompanyCustomerException.class, () -> service.registerCompany(
+            new RegisterCompanyForm("test@ok.com", "F&", "9302030403", true)));
     }
 
     @Test
@@ -99,9 +109,7 @@ public class CustomerServiceTest {
         var service = new CustomerService(dao, mailSender);
 
         // when
-        var reg = service.registerCompany(new RegisterCompanyForm("test@ok.com", "TestOK", "AB02030403", true));
-
-        // then
-        assertFalse(reg);
+        assertThrows(InvalidCompanyCustomerException.class, () -> service.registerCompany(
+            new RegisterCompanyForm("test@ok.com", "TestOK", "AB02030403", true)));
     }
 }
