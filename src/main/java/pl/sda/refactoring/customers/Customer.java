@@ -42,6 +42,24 @@ public class Customer {
         return customer;
     }
 
+    static Customer initializeCompanyWith(RegisterCompanyForm form) {
+        var customer = new Customer();
+        customer.setType(COMPANY);
+        customer.setId(UUID.randomUUID());
+        customer.setCtime(LocalDateTime.now());
+
+        if (form.hasValidEmail()) {
+            customer.setEmail(form.getEmail());
+        }
+        if (form.hasValidName()) {
+            customer.setCompName(form.getName());
+        }
+        if (form.hasValidVat()) {
+            customer.setCompVat(form.getVat());
+        }
+        return customer;
+    }
+
     void initializePerson(RegisterPersonForm form) {
         this.type = PERSON;
         this.id = UUID.randomUUID();
@@ -222,5 +240,9 @@ public class Customer {
         return Objects
             .hash(id, type, ctime, email, verfTime, verf, verifBy, compName, compVat, fName, lName, pesel, addrStreet,
                 addrCity, addrZipCode, addrCountryCode);
+    }
+
+    boolean isValidCompany() {
+        return getEmail() != null && getCompName() != null && getCompVat() != null;
     }
 }
