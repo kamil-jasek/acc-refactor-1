@@ -1,6 +1,10 @@
 package pl.sda.refactoring.customers;
 
+import static java.lang.String.format;
+
 import java.util.regex.Pattern;
+import pl.sda.refactoring.customers.exception.InvalidCompanyDataException;
+import pl.sda.refactoring.customers.exception.RegisterFormNotFilledException;
 
 public class RegisterCompanyForm {
 
@@ -44,15 +48,30 @@ public class RegisterCompanyForm {
         return getEmail() != null && getName() != null && getVat() != null;
     }
 
-    boolean hasValidEmail() {
+    void validate() {
+        if (!isFilled()) {
+            throw new RegisterFormNotFilledException(format("form is incorrectly filled: %s", this));
+        }
+        if (!hasValidEmail()) {
+            throw new InvalidCompanyDataException(format("invalid email: %s", getEmail()));
+        }
+        if (!hasValidName()) {
+            throw new InvalidCompanyDataException(format("invalid name: %s", getName()));
+        }
+        if (!hasValidVat()) {
+            throw new InvalidCompanyDataException(format("invalid vat: %s", getVat()));
+        }
+    }
+
+    private boolean hasValidEmail() {
         return EMAIL_PATTERN.matcher(getEmail()).matches();
     }
 
-    boolean hasValidName() {
+    private boolean hasValidName() {
         return name.matches("[\\p{L}\\s\\.]{2,100}");
     }
 
-    boolean hasValidVat() {
+    private boolean hasValidVat() {
         return vat.matches("\\d{10}");
     }
 

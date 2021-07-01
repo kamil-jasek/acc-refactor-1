@@ -5,7 +5,6 @@ import static java.lang.String.format;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
-import pl.sda.refactoring.customers.exception.InvalidCompanyCustomerException;
 
 /**
  * The customer, can be person or company
@@ -46,23 +45,18 @@ public class Customer {
     }
 
     static Customer initializeCompanyWith(RegisterCompanyForm form) {
-        var customer = new Customer();
-        customer.setType(COMPANY);
-        customer.setId(UUID.randomUUID());
-        customer.setCtime(LocalDateTime.now());
-        if (!form.hasValidEmail()) {
-            throw new InvalidCompanyCustomerException(format("invalid email: %s", form.getEmail()));
-        }
-        customer.setEmail(form.getEmail());
-        if (!form.hasValidName()) {
-            throw new InvalidCompanyCustomerException(format("invalid name: %s", form.getName()));
-        }
-        customer.setCompName(form.getName());
-        if (!form.hasValidVat()) {
-            throw new InvalidCompanyCustomerException(format("invalid vat: %s", form.getVat()));
-        }
-        customer.setCompVat(form.getVat());
+        final var customer = new Customer();
+        customer.initializeCompany(form);
         return customer;
+    }
+
+    private void initializeCompany(RegisterCompanyForm form) {
+        this.id = UUID.randomUUID();
+        this.type = COMPANY;
+        this.ctime = LocalDateTime.now();
+        this.email = form.getEmail();
+        this.compName = form.getName();
+        this.compVat = form.getVat();
     }
 
     void initializePerson(RegisterPersonForm form) {

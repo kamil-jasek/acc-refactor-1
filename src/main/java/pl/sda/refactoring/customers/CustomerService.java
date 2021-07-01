@@ -3,11 +3,8 @@ package pl.sda.refactoring.customers;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 import pl.sda.refactoring.customers.exception.CompanyAlreadyExistsException;
-import pl.sda.refactoring.customers.exception.InvalidCompanyCustomerException;
-import pl.sda.refactoring.customers.exception.RegisterFormNotFilledException;
 
 public final class CustomerService {
 
@@ -50,9 +47,11 @@ public final class CustomerService {
         return customerDao.emailExists(form.getEmail()) || customerDao.peselExists(form.getPesel());
     }
 
-    public boolean registerCompany(RegisterCompanyForm form) {
-        validate(form);
+    public void registerCompany(RegisterCompanyForm form) {
+        form.validate();
+        validateCompanyExistence(form.getEmail(), form.getVat());
         final var customer = Customer.initializeCompanyWith(form);
+
         String subj;
         String body;
         if (form.isVerified()) {
@@ -67,15 +66,13 @@ public final class CustomerService {
                 "We registered your company: " + form.getName() + " in our service. Please wait for verification!";
         }
         customerDao.save(customer);
-        return mailSender.sendEmail(customer.getEmail(), subj, body);
+        mailSender.sendEmail(customer.getEmail(), subj, body);
     }
 
-    private void validate(RegisterCompanyForm form) {
-        if (!form.isFilled()) {
-            throw new RegisterFormNotFilledException(format("form is incorrectly filled: %s", form));
-        } else if (isCompanyRegistered(form.getEmail(), form.getVat())) {
+    private void validateCompanyExistence(String email, String vat) {
+        if (isCompanyRegistered(email, vat)) {
             throw new CompanyAlreadyExistsException(format(
-                "company exists, email: %s, vat: %s", form.getEmail(), form.getVat()));
+                "company exists, email: %s, vat: %s", email, vat));
         }
     }
 

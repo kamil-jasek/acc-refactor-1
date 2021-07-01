@@ -11,11 +11,12 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import pl.sda.refactoring.customers.exception.MailSendFailedException;
 
 final class DefaultMailSender implements MailSender {
 
     @Override
-    public boolean sendEmail(String address, String subj, String msg) {
+    public void sendEmail(String address, String subj, String msg) {
         Properties prop = new Properties();
         prop.put("mail.smtp.auth", true);
         prop.put("mail.smtp.starttls.enable", "true");
@@ -46,10 +47,8 @@ final class DefaultMailSender implements MailSender {
             message.setContent(multipart);
 
             Transport.send(message);
-            return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
-            return false;
+            throw new MailSendFailedException(ex.getMessage(), ex);
         }
     }
 }
