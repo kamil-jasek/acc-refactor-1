@@ -47,7 +47,7 @@ public final class CustomerService {
         return customerDao.emailExists(form.getEmail()) || customerDao.peselExists(form.getPesel());
     }
 
-    public void registerCompany(RegisterCompanyForm form) {
+    public RegisteredCompany registerCompany(RegisterCompanyForm form) {
         form.validate();
         validateCompanyExistence(form.getEmail(), form.getVat());
         final var customer = Customer.initializeCompanyWith(form);
@@ -67,6 +67,7 @@ public final class CustomerService {
         }
         customerDao.save(customer);
         mailSender.sendEmail(customer.getEmail(), subj, body);
+        return new RegisteredCompany(customer.getId());
     }
 
     private void validateCompanyExistence(String email, String vat) {

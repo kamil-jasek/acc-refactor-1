@@ -4,109 +4,75 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import pl.sda.refactoring.customers.exception.CompanyAlreadyExistsException;
 import pl.sda.refactoring.customers.exception.InvalidCompanyDataException;
 import pl.sda.refactoring.customers.exception.RegisterFormNotFilledException;
 
 public class CustomerServiceTest {
 
-    @Test
-    public void shouldRegisterVerifiedCompany() throws Exception {
-        // given
-        var dao = mock(CustomerDao.class);
-        when(dao.emailExists(anyString())).thenReturn(false);
-        when(dao.vatExists(anyString())).thenReturn(false);
-        var customerCapture = ArgumentCaptor.forClass(Customer.class);
-        var mailSender = mock(MailSender.class);
-        var service = new CustomerService(dao, mailSender);
+    private final TestCustomerDao dao = new TestCustomerDao();
+    private final CustomerService customerService = new CustomerService(dao, (adr, subj, msg) -> {});
 
+    @ParameterizedTest
+    @CsvSource({
+        "test@test.com,Test S.A.,9302030403",
+        "test2@test2.com,Testyy S.A.,9304440403"
+    })
+    public void shouldRegisterVerifiedCompany(String email, String name, String vat) {
         // when
-        service.registerCompany(new RegisterCompanyForm("test@test.com", "Test S.A.", "9302030403", true));
+        final var registeredCompany =  customerService
+            .registerCompany(new RegisterCompanyForm(email, name, vat, true));
 
         // then
-        verify(dao).save(customerCapture.capture());
-        var customer = customerCapture.getValue();
-        assertNotNull(customer.getId());
-        assertEquals(customer.getEmail(), "test@test.com");
-        assertEquals(customer.getCompName(), "Test S.A.");
-        assertEquals(customer.getCompVat(), "9302030403");
+        final var customer = dao.getCompanyById(registeredCompany.getId());
+        assertEquals(registeredCompany.getId(), customer.getId());
+        assertEquals(customer.getEmail(), email);
+        assertEquals(customer.getCompName(), name);
+        assertEquals(customer.getCompVat(), vat);
         assertTrue(customer.isVerf());
         assertEquals(customer.getVerifBy(), CustomerVerifier.AUTO_EMAIL);
         assertNotNull(customer.getVerfTime());
     }
 
     @Test
-    public void shouldNotRegisterCompanyIfAlreadyExists() throws Exception {
+    public void shouldNotRegisterCompanyIfAlreadyExists() {
         // given
-        final var dao = mock(CustomerDao.class);
-        when(dao.emailExists(anyString())).thenReturn(true);
-        when(dao.vatExists(anyString())).thenReturn(true);
-        final var mailSender = mock(MailSender.class);
-        final var service = new CustomerService(dao, mailSender);
+        final var customer = new Customer();
+        customer.setId(UUID.randomUUID());
+        customer.setEmail("mail@comp.com");
+        dao.save(customer);
 
         // when
-        assertThrows(CompanyAlreadyExistsException.class, () -> service.registerCompany(
+        assertThrows(CompanyAlreadyExistsException.class, () -> customerService.registerCompany(
             new RegisterCompanyForm("mail@comp.com", "Test S.A.", "9302030403", true)));
     }
 
     @Test
     public void shouldNotRegisterCompanyIfFormIsNotFilled() {
-        // given
-        final var dao = mock(CustomerDao.class);
-        final var mailSender = mock(MailSender.class);
-        final var service = new CustomerService(dao, mailSender);
-
-        // when
-        assertThrows(RegisterFormNotFilledException.class, () -> service.registerCompany(
+        assertThrows(RegisterFormNotFilledException.class, () -> customerService.registerCompany(
             new RegisterCompanyForm(null, null, null, false)));
     }
 
     @Test
-    public void shouldNotRegisterCompanyIfEmailInvalid() throws Exception {
-        // given
-        var dao = mock(CustomerDao.class);
-        when(dao.emailExists(anyString())).thenReturn(false);
-        when(dao.vatExists(anyString())).thenReturn(false);
-        var mailSender = mock(MailSender.class);
-        var service = new CustomerService(dao, mailSender);
-
-        // then
-        assertThrows(InvalidCompanyDataException.class, () -> service.registerCompany(
+    public void shouldNotRegisterCompanyIfEmailInvalid() {
+        assertThrows(InvalidCompanyDataException.class, () -> customerService.registerCompany(
             new RegisterCompanyForm("invalid@", "Test S.A.", "9302030403", true)));
     }
 
     @Test
-    public void shouldNotRegisterCompanyIfNameInvalid() throws Exception {
-        // given
-        var dao = mock(CustomerDao.class);
-        when(dao.emailExists(anyString())).thenReturn(false);
-        when(dao.vatExists(anyString())).thenReturn(false);
-        var mailSender = mock(MailSender.class);
-        var service = new CustomerService(dao, mailSender);
-
-        // when
-        assertThrows(InvalidCompanyDataException.class, () -> service.registerCompany(
+    public void shouldNotRegisterCompanyIfNameInvalid() {
+        assertThrows(InvalidCompanyDataException.class, () -> customerService.registerCompany(
             new RegisterCompanyForm("test@ok.com", "F&", "9302030403", true)));
     }
 
     @Test
-    public void shouldNotRegisterCompanyIfDataInvalid() throws Exception {
-        // given
-        var dao = mock(CustomerDao.class);
-        when(dao.emailExists(anyString())).thenReturn(false);
-        when(dao.vatExists(anyString())).thenReturn(false);
-        var mailSender = mock(MailSender.class);
-        var service = new CustomerService(dao, mailSender);
-
-        // when
-        assertThrows(InvalidCompanyDataException.class, () -> service.registerCompany(
+    public void shouldNotRegisterCompanyIfDataInvalid() {
+        assertThrows(InvalidCompanyDataException.class, () -> customerService.registerCompany(
             new RegisterCompanyForm("test@ok.com", "TestOK", "AB02030403", true)));
     }
 }
