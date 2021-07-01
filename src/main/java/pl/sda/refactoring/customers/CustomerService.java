@@ -3,7 +3,6 @@ package pl.sda.refactoring.customers;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
-import java.util.UUID;
 import pl.sda.refactoring.customers.exception.CompanyAlreadyExistsException;
 
 public final class CustomerService {
@@ -81,28 +80,18 @@ public final class CustomerService {
         return customerDao.emailExists(email) || customerDao.vatExists(vat);
     }
 
-    /**
-     * Set new address for customer
-     * @param cid
-     * @param str
-     * @param zipcode
-     * @param city
-     * @param country
-     * @return
-     */
-    public boolean updateAddress(UUID cid, String str, String zipcode, String city, String country) {
+    public boolean updateAddress(UpdateCustomerAddresss request) {
         var result = false;
-        var customer = customerDao.findById(cid);
+        var customer = customerDao.findById(request.getCustomerId());
         if (customer.isPresent()) {
            var object = customer.get();
-           object.setAddrStreet(str);
-           object.setAddrZipCode(zipcode);
-           object.setAddrCity(city);
-           object.setAddrCountryCode(country);
+           object.setAddrStreet(request.getStr());
+           object.setAddrZipCode(request.getZipcode());
+           object.setAddrCity(request.getCity());
+           object.setAddrCountryCode(request.getCountry());
            customerDao.save(object);
            result = true;
         }
         return result;
     }
-
 }
