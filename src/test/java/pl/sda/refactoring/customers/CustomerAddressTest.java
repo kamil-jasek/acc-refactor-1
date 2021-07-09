@@ -20,7 +20,7 @@ final class CustomerAddressTest {
     void shouldUpdateCustomerAddress(String street, String zipCode, String city, String country) {
         // given
         final var customerDao = mock(CustomerDao.class);
-        when(customerDao.findById(any())).thenReturn(Optional.of(new Customer()));
+        when(customerDao.findById(any())).thenReturn(Optional.of(companyExample()));
         final var customerService = new CustomerService(customerDao, mock(MailSender.class));
 
         // when
@@ -29,5 +29,14 @@ final class CustomerAddressTest {
 
         // then
         assertTrue(updated);
+    }
+
+    private Customer companyExample() {
+        return Customer.initializeCompanyWith(new RegisterCompanyForm(
+            "email@test.com",
+            "Test S.A.",
+            "0920202033",
+            true
+        ));
     }
 }

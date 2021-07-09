@@ -32,7 +32,6 @@ public final class CustomerService {
             body = "<b>Hi " + form.getFirstName() + "</b><br/>" +
                 "Thank you for registering in our service. Now you are verified customer!";
         } else {
-            customer.setVerified(false);
             subj = "Waiting for verification";
             body = "<b>Hi " + form.getFirstName() + "</b><br/>" +
                 "We registered you in our service. Please wait for verification!";
@@ -59,7 +58,6 @@ public final class CustomerService {
             body = "<b>Your company: " + form.getName() + " is ready to make na order.</b><br/>" +
                 "Thank you for registering in our service. Now you are verified customer!";
         } else {
-            customer.setVerified(false);
             subj = "Waiting for verification";
             body = "<b>Hello</b><br/>" +
                 "We registered your company: " + form.getName() + " in our service. Please wait for verification!";
@@ -85,10 +83,10 @@ public final class CustomerService {
         var customer = customerDao.findById(request.getCustomerId());
         if (customer.isPresent()) {
            var object = customer.get();
-           object.setAddrStreet(request.getStr());
-           object.setAddrZipCode(request.getZipcode());
-           object.setAddrCity(request.getCity());
-           object.setAddrCountryCode(request.getCountry());
+           object.updateAddress(new Address(request.getStr(),
+               request.getCity(),
+               request.getZipcode(),
+               request.getCountry()));
            customerDao.save(object);
            result = true;
         }

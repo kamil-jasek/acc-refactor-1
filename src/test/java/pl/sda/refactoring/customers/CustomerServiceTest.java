@@ -42,9 +42,12 @@ public class CustomerServiceTest {
     @Test
     public void shouldNotRegisterCompanyIfAlreadyExists() {
         // given
-        final var customer = new Customer();
-        customer.setId(UUID.randomUUID());
-        customer.setEmail("mail@comp.com");
+        final var customer = Customer.initializeCompanyWith(new RegisterCompanyForm(
+            "mail@comp.com",
+            "Test S.A.",
+            "9439499393",
+            true
+        ));
         dao.save(customer);
 
         // when

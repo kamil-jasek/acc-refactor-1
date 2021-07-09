@@ -38,11 +38,12 @@ public class OrderServiceTest {
 
         // some customer
         var cid = UUID.randomUUID();
-        var customer = new Customer();
-        customer.setId(cid);
-        customer.setCompName("Test S.A.");
-        customer.setCompVat("12020303");
-        customer.setEmail("email@email.com");
+        var customer = Customer.initializeCompanyWith(new RegisterCompanyForm(
+            "email@email.com",
+            "Test S.A.",
+            "12020303",
+            false
+        ));
         when(customerDao.findById(any())).thenReturn(Optional.of(customer));
 
         // some product item
@@ -84,11 +85,12 @@ public class OrderServiceTest {
 
         // some customer
         var cid = UUID.randomUUID();
-        var customer = new Customer();
-        customer.setId(cid);
-        customer.setCompName("Test S.A.");
-        customer.setCompVat("12020303");
-        customer.setEmail("email@email.com");
+        var customer = Customer.initializeCompanyWith(new RegisterCompanyForm(
+            "email@email.com",
+            "Test S.A.",
+            "12020303",
+            false
+        ));
         when(customerDao.findById(any())).thenReturn(Optional.of(customer));
 
         var dc = new DiscountCoupon();
