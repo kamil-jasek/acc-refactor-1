@@ -21,7 +21,7 @@ final class CustomerAddressTest {
         // given
         final var customerDao = mock(CustomerDao.class);
         when(customerDao.findById(any())).thenReturn(Optional.of(companyExample()));
-        final var customerService = new CustomerService(customerDao, mock(MailSender.class));
+        final var customerService = new CustomerService(customerDao, mock(MailCustomerNotifier.class));
 
         // when
         final var updated = customerService.updateAddress(

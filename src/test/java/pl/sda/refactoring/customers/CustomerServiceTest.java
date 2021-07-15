@@ -16,7 +16,7 @@ import pl.sda.refactoring.customers.exception.RegisterFormNotFilledException;
 public class CustomerServiceTest {
 
     private final TestCustomerDao dao = new TestCustomerDao();
-    private final CustomerService customerService = new CustomerService(dao, (adr, subj, msg) -> {});
+    private final CustomerService customerService = new CustomerService(dao, notification -> {});
 
     @ParameterizedTest
     @CsvSource({

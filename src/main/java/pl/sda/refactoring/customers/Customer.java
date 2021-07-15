@@ -135,6 +135,10 @@ public class Customer {
         return getEmail() != null && getfName() != null && getlName() != null && getPesel() != null;
     }
 
+    public String getFullName() {
+        return fName + " " + lName;
+    }
+
     void markVerified() {
         this.verf = true;
         this.verfTime = LocalDateTime.now();
