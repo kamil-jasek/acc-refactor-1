@@ -3,17 +3,23 @@ package pl.sda.refactoring.customers;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
 import pl.sda.refactoring.customers.CustomerNotifier.RegistrationNotification;
+import pl.sda.refactoring.customers.event.EventCreator;
+import pl.sda.refactoring.customers.event.EventCreator.Type;
+import pl.sda.refactoring.customers.event.EventPublisher;
+import pl.sda.refactoring.customers.event.RegisterCustomerEvent;
 import pl.sda.refactoring.customers.exception.CompanyAlreadyExistsException;
 
 public final class CustomerService {
 
     private final CustomerDao customerDao;
-    private final CustomerNotifier customerNotifier;
+    private final EventPublisher eventPublisher;
 
-    CustomerService(CustomerDao customerDao, CustomerNotifier customerNotifier) {
+    CustomerService(CustomerDao customerDao, EventPublisher eventPublisher) {
         this.customerDao = requireNonNull(customerDao);
-        this.customerNotifier = requireNonNull(customerNotifier);
+        this.eventPublisher = requireNonNull(eventPublisher);
     }
 
     public boolean registerPerson(RegisterPersonForm form) {
@@ -28,10 +34,12 @@ public final class CustomerService {
             customer.markVerified();
         }
         customerDao.save(customer);
-        customerNotifier.notifyRegistration(new RegistrationNotification(customer.getId(),
+        eventPublisher.publish(new RegisterCustomerEvent(LocalDateTime.now(),
+            UUID.randomUUID().toString(),
+            new EventCreator("system", Type.SYSTEM),
+            customer.getId(),
             customer.getFullName(),
-            customer.getEmail(),
-            customer.isVerf()));
+            "PERSON"));
         return true;
     }
 
